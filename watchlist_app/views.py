@@ -27,6 +27,15 @@ class ReviewCreate(generics.CreateAPIView):
         review = Review.objects.filter(watchlist=watch, reviewer=reviewer)
         if review.exists():
             raise ValidationError('Review already exists')
+        
+        if watch.total_ratings == 0:
+            watch.avg_rating = serializer.validated_data['rating']
+        else:
+            watch.avg_rating = (watch.avg_rating + serializer.validated_data['rating']) / 2
+        
+        watch.total_ratings += 1
+        watch.save()
+        
         serializer.save(watchlist=watch, reviewer=reviewer)
         
         
@@ -74,7 +83,7 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 #     def post(self, request, *args, **kwargs):
 #         return self.create(request, *args, **kwargs)
 class WatchListView(APIView):
-
+    
     def get(self, request):
         watchlists = WatchList.objects.all()
         serializers = WatchListSerializer(watchlists, many=True)
