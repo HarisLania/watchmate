@@ -10,12 +10,13 @@ from rest_framework.views import APIView
 # from rest_framework import mixins
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
-from .permissions import ReviewerOrReadOnly
+from .permissions import ReviewerOrReadOnly, IsAdminOrReadOnly
 # Create your views here.
 
 
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         return Review.objects.all()
@@ -54,35 +55,10 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
-# class ReviewDetail(mixins.RetrieveModelMixin,
-#                     mixins.UpdateModelMixin,
-#                     mixins.DestroyModelMixin,
-#                     generics.GenericAPIView):
-    
-#     queryset = Review.objects.all()
-#     serializer_class = ReviewSerializer
 
-#     def get(self, request, *args, **kwargs):
-#         return self.retrieve(request, *args, **kwargs)
-
-#     def put(self, request, *args, **kwargs):
-#         return self.update(request, *args, **kwargs)
-
-#     def delete(self, request, *args, **kwargs):
-#         return self.destroy(request, *args, **kwargs)
-
-# class ReviewList(mixins.ListModelMixin,
-#                   mixins.CreateModelMixin,
-#                   generics.GenericAPIView):
-#     queryset = Review.objects.all()
-#     serializer_class = ReviewSerializer
-
-#     def get(self, request, *args, **kwargs):
-#         return self.list(request, *args, **kwargs)
-
-#     def post(self, request, *args, **kwargs):
-#         return self.create(request, *args, **kwargs)
 class WatchListView(APIView):
+    
+    permission_classes = [IsAdminOrReadOnly]
     
     def get(self, request):
         watchlists = WatchList.objects.all()
@@ -100,6 +76,8 @@ class WatchListView(APIView):
         
 
 class WatchListDetailsView(APIView):
+    
+    permission_classes = [IsAdminOrReadOnly]
     
     def get(self, request, pk):
         try:
@@ -128,47 +106,5 @@ class WatchListDetailsView(APIView):
 class StreamPlatformView(viewsets.ModelViewSet):
     queryset = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializer
+    permission_classes = [IsAdminOrReadOnly]
     
-
-      
-
-# class StreamPlatformView(APIView):
-
-#     def get(self, request):
-#         stream_platforms = StreamPlatform.objects.all()
-#         serializers = StreamPlatformSerializer(stream_platforms, context={'request': request}, many=True)
-#         return Response(serializers.data)
-    
-#     def post(self, request):
-#         serializers = StreamPlatformSerializer(data=request.data)
-#         if serializers.is_valid():
-#             serializers.save()
-#             return Response(serializers.data)
-#         else:
-#             return Response(serializers.errors)
-
-        
-
-# class StreamPlatformDetailsView(APIView):
-    
-#     def get(self, request, pk):
-#         try:
-#             stream_platform = StreamPlatform.objects.get(pk=pk)
-#         except StreamPlatform.DoesNotExist:
-#             return Response({"error": "Stream Platform not found"}, status=status.HTTP_404_NOT_FOUND)
-#         serializers = StreamPlatformSerializer(stream_platform)
-#         return Response(serializers.data)
-
-#     def put(self, request, pk):
-#         stream_platform = StreamPlatform.objects.get(pk=pk)
-#         serializers = StreamPlatformSerializer(stream_platform, request.data)
-#         if serializers.is_valid():
-#             serializers.save()
-#             return Response(serializers.data)
-#         else:
-#             return Response(serializers.errors)
-    
-#     def delete(self, request, pk):
-#         stream_platform = StreamPlatform.objects.get(pk=pk)
-#         stream_platform.delete()
-#         return Response({"message": "Stream Platform deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

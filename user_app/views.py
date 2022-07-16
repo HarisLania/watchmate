@@ -28,6 +28,7 @@ def registration_view(request):
             data['email'] = account.email
             token = Token.objects.get(user=account).key            
             data['token'] = token
+            data['id'] = account.id
             
             return Response(data)
         
