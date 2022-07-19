@@ -15,7 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import ReviewerOrReadOnly, IsAdminOrReadOnly
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle 
 from .throttling import ReviewCreateThrottle, ReviewListThrottle
-
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 # Create your views here.
 
 
@@ -51,8 +52,10 @@ class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     throttle_classes = [ReviewListThrottle, AnonRateThrottle]
-
-    def get_queryset(self):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['reviewer__username', 'active']
+    
+    def get_queryset(self): 
         pk = self.kwargs['pk']
         return Review.objects.filter(watchlist=pk)
     
@@ -63,6 +66,22 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReviewSerializer
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'review-detail'
+
+
+
+class WatchListFilter(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'platform__name']
+
+
+class WatchListOrderingFilter(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['avg_rating']
+
 
 class WatchListView(APIView):
     
